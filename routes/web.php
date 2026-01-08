@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Archivos_Sincronizasores;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\ClienteController;
@@ -110,6 +111,8 @@ Route::middleware('auth')->group(function () {
         Route::post('ServiciosWEB/{servicio}/{metodo}/{modo}', [ SincronizacionController::class, 'ServicioWeb'])->name('Sincronizar');
         //ruta intermedia para el servicio de edg1 ya que esta en subservicios 
         Route::post('ServiciosWEB_Aux/{servicio}/{metodo}/{modo}', [ SincronizacionController::class, 'ServicioWebAux'])->name('SincronizarAux');
+
+        Route::post('ServiciosWEB/{servicio}', [Archivos_Sincronizasores::class, 'ServicioWeb'])->name('SincronizarArchivo');
     });
 
 
