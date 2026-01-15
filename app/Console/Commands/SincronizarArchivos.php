@@ -21,16 +21,22 @@ class SincronizarArchivos extends Command
 
         switch($metodo)
         {
-            case 'Cambios_Monedas': $controller->CambiosMoneda($ruta, true); break;
             case 'Monedas': $controller->Monedas($ruta, true); break;
             case 'Articulos': $controller->Articulos($ruta, true); break;
-            case 'Clientes': $controller->Clientes($ruta, true); break;
-            case 'Vendedores': $controller->Vendedores($ruta, true); break;
             case 'Categoria_Lista_Precios': $controller->Categoria_Lista_Precios($ruta, true); break;
+            case 'Marcas': $controller->Marcas($ruta, true); break;
+            case 'Lista_Precios': $controller->ListaPrecio($ruta, true); break;
+            case 'Clientes': $controller->Clientes($ruta, true); break;
             case 'Direcciones': $controller->Direcciones($ruta, true); break;
+            case 'Grupo_Descuentos': $controller->Grupo_Descuentos($ruta, true); break;
+            case 'Descuentos_Detalle': $controller->DescuentosDetalle($ruta, true, 1, 0, 0, 0, 0); break;
+            case 'Vendedores': $controller->Vendedores($ruta, true); break;
+            case 'Cambios_Monedas': $controller->CambiosMoneda($ruta, true); break;
+            case 'DocNum': $controller->CotizacionUpdate($ruta, true); break;
+            case 'DocNumP': $controller->PedidoUpdate($ruta, true); break;
+            case 'Stock': $controller->stock($ruta, true); break;
             case 'CotizacionEstatus': $controller->CotizacionEstatus($ruta, true); break;
             case 'PedidoEstatus': $controller->PedidoEstatus($ruta, true); break;
-            case 'Marcas': $controller->Marcas($ruta, true); break;
             default: $this->error("❌ Tipo de sincronización '$metodo' no reconocido."); return;
         }
 

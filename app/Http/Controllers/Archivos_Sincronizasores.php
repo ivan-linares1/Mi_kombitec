@@ -5,6 +5,7 @@ use App\Models\Articulo;
 use App\Models\Clientes;
 use App\Models\Cotizacion;
 use App\Models\Descuento;
+use App\Models\DetalleDescuento;
 use App\Models\DireccionesClientes;
 use App\Models\ListaPrecio;
 use App\Models\Marcas;
@@ -60,6 +61,14 @@ class Archivos_Sincronizasores extends Controller
         if($CLI) { fwrite(STDERR, "\033[31mERROR:\033[0m $msg" . PHP_EOL); exit(1); }
         return ['error' => $msg];
     }
+
+    private function regresos($mesajes)
+    {
+        //dd(session()->isStarted());
+        if (isset($mesajes['warning'])) return redirect()->route('sincronizadores')->with('warning', $mesajes['warning']);
+        if (isset($mesajes['error'])) return redirect()->route('sincronizadores')->with('error', $mesajes['error']);
+        if (isset($mesajes['success'])) return redirect()->route('sincronizadores')->with('success', $mesajes['success']);
+    }
     /*****************************************************************/
 
    
@@ -73,26 +82,28 @@ class Archivos_Sincronizasores extends Controller
         }
 
         switch ($servicio) {
-            case 'Monedas': return $this->Monedas($ruta, false);
-            case 'Articulos': return $this->Articulos($ruta, false); 
-            case 'Categoria_Lista_Precios': return $this->Categoria_Lista_Precios($ruta, false); 
-            case 'Marcas': return $this->Marcas($ruta, false);
-            case '#': return $this->ListaPrecio($ruta, false);
-            case 'Clientes': return $this->Clientes($ruta, false);
-            case 'Direcciones': return $this->Direcciones($ruta, false);
-            case 'Grupo_Descuentos': return $this->Grupo_Descuentos($ruta, false);
-
-            case 'Vendedores': return $this->Vendedores($ruta, false);
-            case 'Cambios_Monedas': return $this->CambiosMoneda($ruta, false);      
-            case '#': return $this->CotizacionUpdate($ruta, false); 
-            case 'CotizacionEstatus': return $this->CotizacionEstatus($ruta, false); 
-
-
-            case 'PedidoEstatus': return $this->PedidoEstatus($ruta, false); 
-            case '#': return $this->stock($ruta, false);            
+            case 'Monedas': $mensajes =  $this->Monedas($ruta, false); break;
+            case 'Articulos': $mensajes = $this->Articulos($ruta, false); break; 
+            case 'Categoria_Lista_Precios': $mensajes =  $this->Categoria_Lista_Precios($ruta, false); break;
+            case 'Marcas': $mensajes = $this->Marcas($ruta, false); break;
+            case 'Lista_Precios': $mensajes =  $this->ListaPrecio($ruta, false); break;
+            case 'Clientes': $mensajes =  $this->Clientes($ruta, false); break;
+            case 'Direcciones': $mensajes =  $this->Direcciones($ruta, false); break;
+            case 'Grupo_Descuentos': $mensajes = $this->Grupo_Descuentos($ruta, false); break;
+            case 'Descuentos_Detalle': $mensajes = $this->DescuentosDetalle($ruta, false, 1, 0, 0, 0, 0); break;
+            case 'Vendedores': $mensajes =  $this->Vendedores($ruta, false); break;
+            case 'Cambios_Monedas': $mensajes =  $this->CambiosMoneda($ruta, false); break;       
+            case 'DocNum': $mensajes =  $this->CotizacionUpdate($ruta, false); break;
+            case 'DocNumP': $mensajes =  $this->PedidoUpdate($ruta, false); break;
+            case 'Stock': $mensajes =  $this->stock($ruta, false); break;
+            case 'CotizacionEstatus': $mensajes =  $this->CotizacionEstatus($ruta, false); break;
+            case 'PedidoEstatus': $mensajes =  $this->PedidoEstatus($ruta, false); break;
             default: return redirect()->back()->with('error', 'Servicio no encontrado.');
         }
+
+       return $this->regresos($mensajes);
     }
+
 
     public function Monedas($rutaXml, $CLI)//OCRN
     {
@@ -127,13 +138,7 @@ class Archivos_Sincronizasores extends Controller
             }
         }
 
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Articulos($rutaXml, $CLI) //OITM
@@ -175,14 +180,7 @@ class Archivos_Sincronizasores extends Controller
             }
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        } 
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Categoria_Lista_Precios($rutaXml, $CLI)//ITM1
@@ -204,7 +202,6 @@ class Archivos_Sincronizasores extends Controller
         $total = count($xml->CAT_LP); // Total elementos del XML
         $insertados = 0; // Contador de inserciones/actualizaciones exitosas
         $errores = 0;   // Contador de errores
-        $warnings = 0;
 
         foreach ($xml->CAT_LP as $lista) {
             try {
@@ -217,13 +214,7 @@ class Archivos_Sincronizasores extends Controller
                 $errores++; Log::channel('sync')->error("OPLN_Articulos: " . "Error con la categoria de lista de precio: " . (string)$lista->ListName . "=> " . $e->getMessage());
             }    
         }
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Marcas($rutaXml, $CLI) //OITB
@@ -263,16 +254,10 @@ class Archivos_Sincronizasores extends Controller
                  $errores++; Log::channel('sync')->error("OITB_Marcas: " . "Error con la marca: " . (string)$marca->ItmsGrpNam . "=> " . $e->getMessage());
             }
         }
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+       return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
-    private function ListaPrecio($rutaXml, $CLI)//ITM1 DE CADA ARTICULO
+    public function ListaPrecio($rutaXml, $CLI)//ITM1 DE CADA ARTICULO
     {
         $xml = $this->Archivos($rutaXml, $CLI);
 
@@ -320,13 +305,7 @@ class Archivos_Sincronizasores extends Controller
                 $errores++; Log::channel('sync')->error("ITM1_ListaPrecio: " . "Error con el precio del articulo: " . (string)$precio->ItemCode . "=> " . $e->getMessage());
             }
         }
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Clientes($rutaXml, $CLI)//OCRD
@@ -371,13 +350,7 @@ class Archivos_Sincronizasores extends Controller
             }
         }
 
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Direcciones($rutaXml, $CLI) // CRD1
@@ -440,13 +413,7 @@ class Archivos_Sincronizasores extends Controller
                  $errores++; Log::channel('sync')->error("CRD1_Direcciones: " . "Error con direcion de: ".$direccion->Address." Del cliente " . (string)$direccion->CardCode . "=> " . $e->getMessage());
             }
         } 
-        $mesajes = $this->Mensajes($total, $insertados+$excluidos, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function Grupo_Descuentos($rutaXml, $CLI) //OEDG
@@ -501,16 +468,85 @@ class Archivos_Sincronizasores extends Controller
             }           
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
-    /*PENDIENTE LOS DE DESCUENTOS  EDG1*/
+    /*la variable $Count_aux lleva el control de cuantas veces se va a recursar la funcion  C:\SFTP_MiKombitec\data\Descuentos_Cantidad_Actualiza_ */
+    public function DescuentosDetalle($rutaXml, $CLI, $Count_aux, $total_i, $insertados_i,  $warnings_i, $errores_i) //EDG1
+    { 
+        $rutaXmlN='';
+        if($rutaXml == 'C:\Users\KOM090\Documents\Nueva\Descuentos_Cantidad_Actualiza_' && $CLI == false)
+            return ['error' => 'ERROR: Proceso muy grande usa la Tarea Programada o la Terminal del Sistema'];
+        if($rutaXml == 'C:\Users\KOM090\Documents\Nueva\Descuentos_Cantidad_Actualiza_')
+            $rutaXmlN = $rutaXml.$Count_aux.'\Descuentos_Cantidad_Actualiza_'.$Count_aux.'.xml';      
+        else
+        {
+            $rutaXmlN = $rutaXml;
+            $Count_aux = 4;
+        }
+            
+        Log::channel('sync')->notice("Inicio del servicio $Count_aux");
+        $xml = $this->Archivos($rutaXmlN, $CLI);
+
+        if ($xml === false) return;//muestra errores en la carga del xml
+        
+        if (!isset($xml->GPO_DescuentosEDG1) && $CLI) {  echo "XML sin datos\n"; return; }
+
+        if (!is_array($xml->GPO_DescuentosEDG1) && !($xml->GPO_DescuentosEDG1 instanceof \Traversable)) {
+            $xml->GPO_DescuentosEDG1 = [$xml->GPO_DescuentosEDG1];
+        }
+
+        $total = count($xml->GPO_DescuentosEDG1); // Total elementos del XML
+        $insertados = 0; // Contador de inserciones/actualizaciones exitosas
+        $errores = 0;   // Contador de errores
+        $warnings = 0;
+        
+        foreach ($xml->GPO_DescuentosEDG1 as $desc) {
+            try {
+                $absEntry = (int) ($desc->AbsEntry );
+                $objKey   = (string) ($desc->ObjKey);
+
+                // Validar foráneos
+                $oedgExiste = Descuento::where('AbsEntry', $absEntry)->exists();
+                $oitbExiste = Marcas::where('ItmsGrpCod', $objKey)->exists();
+
+                if (!$oedgExiste || !$oitbExiste) {
+                    $detalle = [];
+                    if (!$oedgExiste) $detalle[] = "El grupo de descuento: '{$absEntry}' no encontrado";
+                    if (!$oitbExiste) $detalle[] = "La Marca: '{$objKey}' no encontrada";
+                    $warnings++; Log::channel('sync')->warning("EDG1_Descuentos: => ".implode(', ', $detalle));
+                    continue; // No insertamos este registro aún
+                }
+
+                // Insertar o actualizar registro
+                $registro = DetalleDescuento::updateOrInsert(
+                    [
+                        'AbsEntry' => (int)$absEntry,
+                        'ObjType'  => (string)$desc->ObjType,
+                        'ObjKey'   => (string)$objKey,
+                    ],
+                    [
+                        'Disctype' => 'D',
+                        'Discount' => (float)$desc->Discount,
+                    ]
+                );
+                if($registro){ $insertados++;}// Si se inserta un nuevo registro o se actualiza, contamos como exitoso.
+            } catch (\Throwable $e) {
+                $errores++; Log::channel('sync')->error("EDG1_DescuentosDetalle: Error con registro AbsEntry '{$absEntry}' y la Marca ObjKey '{$objKey}' => ".$e->getMessage());
+            }
+        }
+
+        if($Count_aux != 4)
+        {
+            Log::channel('sync')->notice("Fin del servicio $Count_aux con un total de $total; Insertados de $insertados; Warnings de $warnings; y de errores: $errores");
+            $Count_aux++;
+           return $this->DescuentosDetalle($rutaXml, $CLI, $Count_aux, $total + $total_i, $insertados + $insertados_i,  $warnings + $warnings_i, $errores + $errores_i);
+        }
+        Log::channel('sync')->notice("Fin del servicio $Count_aux con un total de $total; Insertados de $insertados; Warnings de $warnings; y de errores: $errores");
+        $totalBD = $insertados + $insertados_i;
+        Log::channel('sync')->notice("Insertados o actualizados: $totalBD");
+        return $this->Mensajes($total + $total_i, $insertados + $insertados_i + $warnings + $warnings_i, $errores + $errores_i, $CLI);
+    }
 
     public function Vendedores($rutaXml, $CLI) //OSLP
     {
@@ -548,13 +584,7 @@ class Archivos_Sincronizasores extends Controller
             }           
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
     public function CambiosMoneda($rutaXml, $CLI)//ORTT 
@@ -629,16 +659,10 @@ class Archivos_Sincronizasores extends Controller
             Log::channel('sync')->warning("ORTT_CambiosMonedas: La moneda MXP no existe en OCRN");
         }
 
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+       return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
-    private function CotizacionUpdate($rutaXml, $CLI) //OQUT coloca el DocNum en la cotizaciones o sea trae el numero de SAP de cada cotizacion 
+    public function CotizacionUpdate($rutaXml, $CLI) //OQUT coloca el DocNum en la cotizaciones o sea trae el numero de SAP de cada cotizacion 
     {
         $xml = $this->Archivos($rutaXml, $CLI);
 
@@ -669,13 +693,8 @@ class Archivos_Sincronizasores extends Controller
                 $errores++; Log::channel('sync')->error("OQUT: " . "Error al actualizar la cotizacion: ".$cotizacion->ID_COT_KombiShop. "=> " . $e->getMessage());
             }           
         }
-         $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }  
 
     public function CotizacionEstatus($rutaXml, $CLI) //OQUT coloca el estado de cada cotizacion en abierto o cerrado desde SAP
@@ -711,16 +730,78 @@ class Archivos_Sincronizasores extends Controller
             }           
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
-    /*PENDIENTES LOS PEDIDDOS UPDATE Y EL NOINSERTADOS*/
+    
+    public function PedidoUpdate($rutaXml, $CLI)//ORDR coloca el DocNum en el pedido o sea trae el numero de SAP de cada pedido
+    {
+         $xml = $this->Archivos($rutaXml, $CLI);
+
+        if ($xml === false) return;//muestra errores en la carga del xml
+        if (is_array($xml) && isset($xml['error'])) { return redirect()->back()->with('error', $xml['error']); } //Errores en WEB del xml
+        
+        
+        if (!isset($xml->No_Pedido_ORDR)) { if($CLI) { echo "XML sin datos\n"; return; }
+            return redirect()->back()->with('warning', 'XML sin datos');
+        }
+
+        if (!is_array($xml->No_Pedido_ORDR) && !($xml->No_Pedido_ORDR instanceof \Traversable)) {
+            $xml->No_Pedido_ORDR = [$xml->No_Pedido_ORDR];
+        }
+
+        $total = count($xml->No_Pedido_ORDR); // Total elementos del XML
+        $insertados = 0; // Contador de inserciones/actualizaciones exitosas
+        $errores = 0;   // Contador de errores
+
+        foreach ($xml->No_Pedido_ORDR as $pedido) {
+            try {
+                // actualizar registro
+                $registro = Pedido::find($pedido->ID_COT_KombiShop);
+                //$registro->update([ 'DocNum' => $pedido->DocNum ]);
+                $data = ['DocNum' => $pedido->DocNum, ];
+
+                if ($pedido->DocNum) {
+                    $data['Status'] = 'Insertado en SAP';
+                }
+
+                $registro->update($data);
+
+                if($registro){ $insertados++;}// Si se inserta un nuevo registro o se actualiza, contamos como exitoso.
+            } catch (\Throwable $e) {
+                $errores++; Log::channel('sync')->error("ORDR: " . "Error al actualizar el pedido: ".$pedido->ID_COT_KombiShop. "=> " . $e->getMessage());
+            }           
+        }
+        $this->NoInsertados('C:\Users\KOM090\Documents\Nueva\PedidosNoInsertados\PedidosNoInsertados.xml', $CLI);
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
+    }
+
+    private function NoInsertados($rutaXml, $CLI) //Es un metodo aparte que se ejecuta cuando existen pedidos que no se insertaron en sap me manda todos es un complemento
+    {                                                   //del metodo de PedidoUpdate
+        $xml = $this->Archivos($rutaXml, $CLI);
+
+        if ($xml === false) return;//muestra errores en la carga del xml
+        if (is_array($xml) && isset($xml['error'])) { return redirect()->back()->with('error', $xml['error']); } //Errores en WEB del xml
+        
+        
+        if (!isset($xml->PedidosNoInsertados)) { if($CLI) { echo "XML sin datos\n"; return; }
+            return redirect()->back()->with('warning', 'XML sin datos');
+        }
+
+        if (!is_array($xml->PedidosNoInsertados) && !($xml->PedidosNoInsertados instanceof \Traversable)) {
+            $xml->PedidosNoInsertados = [$xml->PedidosNoInsertados];
+        }
+
+        foreach ($xml->PedidosNoInsertados as $pedido) {
+            try {
+                // actualizar registro
+                $registro = Pedido::find($pedido->Code);
+                $registro->update([ 'Status' => $pedido->U_Estatus ]);
+            } catch (\Throwable $e) {
+                Log::channel('sync')->error("ORDR: " . "Error al actualizar el estatus de SAP del pedido: ".$pedido->Code. "=> " . $e->getMessage());
+            }           
+        }
+    }
     
     public function PedidoEstatus($rutaXml, $CLI) //OQUT coloca el estado de cada cotizacion en abierto o cerrado desde SAP
     {
@@ -754,17 +835,11 @@ class Archivos_Sincronizasores extends Controller
             }           
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     }
 
 
-    private function stock($rutaXml, $CLI)//OITW agrega el stock de cada almacen 
+    public function stock($rutaXml, $CLI)//OITW agrega el stock de cada almacen 
     {
         $xml = $this->Archivos($rutaXml, $CLI);
 
@@ -801,13 +876,7 @@ class Archivos_Sincronizasores extends Controller
             }           
         }
         
-        $mesajes = $this->Mensajes($total, $insertados, $errores, $CLI);
-        if ($CLI == false) {
-            // para web
-            if (isset($mesajes['warning'])) return redirect()->back()->with('warning', $mesajes['warning']);
-            if (isset($mesajes['error'])) return redirect()->back()->with('error', $mesajes['error']);
-            if (isset($mesajes['success'])) return redirect()->back()->with('success', $mesajes['success']);
-        }
+        return $this->Mensajes($total, $insertados, $errores, $CLI);
     } 
 
 }
