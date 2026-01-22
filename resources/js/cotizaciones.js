@@ -253,6 +253,48 @@ $('#selectCliente').on('change', function() {
 });
 
 // ================================
+// VERIFICACION DE STOCK POR LINEA
+// ================================
+
+window.verificarStockFila = function (fila) {
+    if (!rolesConStock.includes(rolUsuario)) return;
+
+    const cantidad = Number(fila.querySelector('.cantidad')?.value || 0);
+    const itemCode = fila.querySelector('.itemcode')?.textContent?.trim();
+    const icono = fila.querySelector('.stock-icon');
+
+    if (!itemCode || !icono) return;
+
+    icono.textContent = '⏳';
+
+    $.ajax({
+        url: `/Pedidos/Articulo/stock`,
+        type: 'POST',
+        data: {
+            articulos: [{
+                itemCode: itemCode,
+                cantidad: cantidad
+            }]
+        },
+        success: function (response) {
+            if (response.success) {
+                icono.textContent = '✔';
+                icono.style.color = 'green';
+            } else {
+                icono.textContent = '✖';
+                icono.style.color = 'red';
+            }
+        },
+        error: function () {
+            icono.textContent = '✖';
+            icono.style.color = 'red';
+        }
+    });
+}
+
+
+
+// ================================
 // AGREGAR ARTÍCULO A LA TABLA
 // ================================
 window.agregarArticulo = function(art) {
@@ -743,38 +785,3 @@ $("#btnPedido").on("click", function(e) {
     });
 });
 
-window.verificarStockFila = function (fila) {
-    if (!rolesConStock.includes(rolUsuario)) return;
-
-    const cantidad = Number(fila.querySelector('.cantidad')?.value || 0);
-    const itemCode = fila.querySelector('.itemcode')?.textContent?.trim();
-    const icono = fila.querySelector('.stock-icon');
-
-    if (!itemCode || !icono) return;
-
-    icono.textContent = '⏳';
-
-    $.ajax({
-        url: `/Pedidos/Articulo/stock`,
-        type: 'POST',
-        data: {
-            articulos: [{
-                itemCode: itemCode,
-                cantidad: cantidad
-            }]
-        },
-        success: function (response) {
-            if (response.success) {
-                icono.textContent = '✔';
-                icono.style.color = 'green';
-            } else {
-                icono.textContent = '✖';
-                icono.style.color = 'red';
-            }
-        },
-        error: function () {
-            icono.textContent = '✖';
-            icono.style.color = 'red';
-        }
-    });
-}
