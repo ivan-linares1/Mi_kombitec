@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/consulta-stock/buscar', [ArticuloController::class, 'buscarArticulos'])->name('consulta_stock.buscar');
     Route::post('/consulta-stock/ver', [ArticuloController::class, 'verStock'])->name('consulta_stock.ver');
 
+    Route::get('/articulos/datatable', [ArticuloController::class, 'datatable']);
+
 
 
 

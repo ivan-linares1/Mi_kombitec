@@ -131,7 +131,8 @@ class PedidosController extends Controller
         ->with('marca')
         ->get();
 
-
+        //ÚNICA MEJORA REAL: indexar colección
+        $articulosPorCodigo = $articulos->keyBy('ItemCode');
         $modo = 0;
 
         // Valores por defecto para cuando no mande un dockentry
@@ -153,15 +154,15 @@ class PedidosController extends Controller
                 'vendedor' => $cotizacion->SlpCode,
                 'moneda'   => $cotizacion->DocCur,
                 'comentario' =>$cotizacion->comment,
+                'BaseEntry' =>$DocEntry,
             ];
-            foreach ($cotizacion->lineas as $linea) {
-                $articulo = $articulos->firstWhere('ItemCode', $linea->ItemCode);
 
-                if ($articulo) {
-                    // Clonamos el objeto artículo y agregamos los datos de la cotización
-                    $artClone = clone $articulo;
-                    $artClone->Quantity  = $linea->Quantity;
-                    $artClone->BaseLine = $linea->BaseLine;
+            // 🔥 SIN O(n²)
+            foreach ($cotizacion->lineas as $linea) {
+                if (isset($articulosPorCodigo[$linea->ItemCode])) {
+                    $artClone = clone $articulosPorCodigo[$linea->ItemCode];
+                    $artClone->Quantity = $linea->Quantity;
+                    $artClone->BaseLine = $linea->LineNum;
                     $lineasComoArticulos[] = $artClone;
                 }
             }

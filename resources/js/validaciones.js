@@ -118,3 +118,6 @@ cierren cuando se trabe el navegador, cerraron la pestaña  esta funcion va en c
         });
     }, 24000); // 4 minutos en milisegundos
 })();
+
+
+

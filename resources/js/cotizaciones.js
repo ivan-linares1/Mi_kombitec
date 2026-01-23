@@ -253,6 +253,48 @@ $('#selectCliente').on('change', function() {
 });
 
 // ================================
+// VERIFICACION DE STOCK POR LINEA
+// ================================
+
+window.verificarStockFila = function (fila) {
+    if (!rolesConStock.includes(rolUsuario)) return;
+
+    const cantidad = Number(fila.querySelector('.cantidad')?.value || 0);
+    const itemCode = fila.querySelector('.itemcode')?.textContent?.trim();
+    const icono = fila.querySelector('.stock-icon');
+
+    if (!itemCode || !icono) return;
+
+    icono.textContent = '⏳';
+
+    $.ajax({
+        url: `/Pedidos/Articulo/stock`,
+        type: 'POST',
+        data: {
+            articulos: [{
+                itemCode: itemCode,
+                cantidad: cantidad
+            }]
+        },
+        success: function (response) {
+            if (response.success) {
+                icono.textContent = '✔';
+                icono.style.color = 'green';
+            } else {
+                icono.textContent = '✖';
+                icono.style.color = 'red';
+            }
+        },
+        error: function () {
+            icono.textContent = '✖';
+            icono.style.color = 'red';
+        }
+    });
+}
+
+
+
+// ================================
 // AGREGAR ARTÍCULO A LA TABLA
 // ================================
 window.agregarArticulo = function(art) {
@@ -265,7 +307,9 @@ window.agregarArticulo = function(art) {
     fila.dataset.precioOriginal = art.precio.Price;
     fila.dataset.monedaOriginal = JSON.stringify(art.precio.moneda);
     fila.dataset.itmsGrpCod = art.ItmsGrpCod;
-    fila.dataset.baseline = art.BaseLine ?? null;  
+   if (art.BaseLine !== undefined && art.BaseLine !== null) {
+        fila.dataset.baseline = art.BaseLine;
+    }  
     fila.dataset.itemcode = art.ItemCode;
 
     const monedaCambioID = parseInt(document.querySelector('select[name="currency_id"]').value);
@@ -463,34 +507,86 @@ function eliminarFila(boton) {
 // ================================
 // FILTROS Y MODAL DE ARTÍCULOS
 // ================================
-$(document).ready(function() {
-    //configuracion 
-    var tablaModal = $('#tablaModalArticulos').DataTable({
-        pageLength: 25,
-        language: { url: '/datatables/i18n/es-ES.json' },
+let tablaModal;
+
+$('#modalArticulos').on('shown.bs.modal', function () {
+    if ($.fn.DataTable.isDataTable('#tablaModalArticulos')) return;
+
+    tablaModal = $('#tablaModalArticulos').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 10,
         ordering: false,
-        searching: true
+        searching: true,
+        searchDelay: 500,
+        autoWidth: false,
+        language: { url: '/datatables/i18n/es-ES.json' },
+
+        ajax: {
+            url: '/articulos/datatable',
+            type: 'GET'
+        },
+
+        columns: [
+            { data: 'ItemCode' },
+            { data: 'FrgnName' },
+            { data: 'ItemName' },
+            { data: 'marca.ItmsGrpNam' },
+
+            {
+                data: null,
+                render: function (data) {
+                    return `
+                        <span class="precio-celda"
+                            data-precio="${data.precio.Price}"
+                            data-moneda='${JSON.stringify(data.precio.moneda)}'
+                            style="width:auto"> 
+                        </span >
+                    `;
+                }
+            },
+
+            {
+                data: 'imagen',
+                render: img => `
+                    <a data-fancybox href="${img?.Ruta_imagen}">
+                        <img src="${img?.Ruta_imagen}" style="width:50px">
+                    </a>
+                `
+            },
+
+            {
+                data: null,
+                render: function (data) {
+
+                    if (data.OnHand <= 0) {
+                        return `
+                            <span class="badge bg-danger mb-1">Sin stock</span><br>
+                        `;
+                    }
+
+                    return `
+                        <button class="btn btn-primary btn-sm"
+                            onclick='agregarArticulo(${JSON.stringify(data)})'>
+                            Agregar
+                        </button>
+                    `;
+                }
+            }
+        ],
+
+        drawCallback: function () {
+            actualizarPrecios(); // 🔥 conversión aquí
+        }
     });
-
-    //cuando se cambia de pagina regresa al inicio del modal
-    function scrollModalAlInicio() {
-        setTimeout(() => $('#modalArticulos .modal-body').scrollTop(0), 50);
-    }
-
-    $('#buscadorModal').on('keyup', function() { tablaModal.search(this.value).draw(); scrollModalAlInicio(); });
-    $('#filtroMostrar').on('change', function() { tablaModal.page.len($(this).val()).draw(); scrollModalAlInicio(); });
-    $('#tablaModalArticulos').on('page.dt', function() { scrollModalAlInicio(); });
-    $('#modalArticulos').on('shown.bs.modal', function() { scrollModalAlInicio(); });
-
-    $('#modalArticulos').on('hidden.bs.modal', function () {
-        $('#buscadorModal').val('');
-        tablaModal.search('').draw();
-        $('#filtroMostrar').val('25');
-        tablaModal.page.len(25).draw();
-        tablaModal.page('first').draw('page');
-        scrollModalAlInicio();
+    tablaModal.on('draw.dt', function () {
+        $('#modalArticulos .modal-body').animate(
+            { scrollTop: 0 },
+            300
+        );
     });
 });
+
 
 // ================================
 // Validar campos
@@ -743,38 +839,3 @@ $("#btnPedido").on("click", function(e) {
     });
 });
 
-window.verificarStockFila = function (fila) {
-    if (!rolesConStock.includes(rolUsuario)) return;
-
-    const cantidad = Number(fila.querySelector('.cantidad')?.value || 0);
-    const itemCode = fila.querySelector('.itemcode')?.textContent?.trim();
-    const icono = fila.querySelector('.stock-icon');
-
-    if (!itemCode || !icono) return;
-
-    icono.textContent = '⏳';
-
-    $.ajax({
-        url: `/Pedidos/Articulo/stock`,
-        type: 'POST',
-        data: {
-            articulos: [{
-                itemCode: itemCode,
-                cantidad: cantidad
-            }]
-        },
-        success: function (response) {
-            if (response.success) {
-                icono.textContent = '✔';
-                icono.style.color = 'green';
-            } else {
-                icono.textContent = '✖';
-                icono.style.color = 'red';
-            }
-        },
-        error: function () {
-            icono.textContent = '✖';
-            icono.style.color = 'red';
-        }
-    });
-}

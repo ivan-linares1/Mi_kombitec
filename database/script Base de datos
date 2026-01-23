@@ -262,7 +262,9 @@ CREATE TABLE users (
 CREATE TABLE configuracion(
   id INT AUTO_INCREMENT PRIMARY KEY,
   iva VARCHAR(10) null,
-  ruta_logo VARCHAR(255),
+  ruta_logo_empresa VARCHAR(255),
+  ruta_logo_login VARCHAR(255),
+  ruta_logo_principal VARCHAR(255),
   nombre_empresa VARCHAR(255),
   calle VARCHAR(150),
   colonia VARCHAR (50),
