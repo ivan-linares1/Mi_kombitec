@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Articulo;
 use App\Models\Marcas;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -151,6 +152,78 @@ class ArticuloController extends Controller
             ]);
         }
     }
+
+    public function datatable(Request $request)
+{
+    $hoy = Carbon::today()->format('Y-m-d');
+
+    /*
+    |--------------------------------------------------------------------------
+    | 1. QUERY BASE (TOTAL SIN FILTROS DE BÚSQUEDA)
+    |--------------------------------------------------------------------------
+    */
+    $baseQuery = Articulo::where('Active', 'Y')
+        ->whereHas('precio.moneda.cambios', function ($q) use ($hoy) {
+            $q->whereDate('RateDate', $hoy);
+        });
+
+    $recordsTotal = $baseQuery->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | 2. QUERY PRINCIPAL (CON RELACIONES)
+    |--------------------------------------------------------------------------
+    */
+    $query = Articulo::where('Active', 'Y')
+        ->whereHas('precio.moneda.cambios', function ($q) use ($hoy) {
+            $q->whereDate('RateDate', $hoy);
+        })
+        ->with([
+            'precio.moneda.cambios' => function ($q) use ($hoy) {
+                $q->whereDate('RateDate', $hoy);
+            },
+            'imagen',
+            'marca'
+        ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | 3. BÚSQUEDA GLOBAL (DataTables)
+    |--------------------------------------------------------------------------
+    */
+    if ($search = $request->input('search.value')) {
+        $query->where(function ($q) use ($search) {
+            $q->where('ItemCode', 'like', "%{$search}%")
+              ->orWhere('ItemName', 'like', "%{$search}%")
+              ->orWhere('FrgnName', 'like', "%{$search}%");
+        });
+    }
+
+    $recordsFiltered = $query->count();
+
+    /*
+    |--------------------------------------------------------------------------
+    | 4. PAGINACIÓN
+    |--------------------------------------------------------------------------
+    */
+    $articulos = $query
+        ->skip($request->start)
+        ->take($request->length)
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | 5. RESPUESTA DATATABLES
+    |--------------------------------------------------------------------------
+    */
+    return response()->json([
+        'draw'            => intval($request->draw),
+        'recordsTotal'    => $recordsTotal,
+        'recordsFiltered' => $recordsFiltered,
+        'data'            => $articulos,
+    ]);
+}
+
 
     
 }

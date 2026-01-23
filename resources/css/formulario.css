@@ -182,11 +182,16 @@ span.form-control {
 /* =================== MODAL ARTÍCULOS =================== */
 .modal-content {
     border-radius: 12px;
-    max-width: 95%; /* un poco más ancho */
+    max-width: 95%;
 }
 
 .modal-dialog.modal-lg {
-    max-width: 1000px; /* más ancho para que no se vea amontonado */
+    max-width: 1000px;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .modal-header {
@@ -204,24 +209,26 @@ span.form-control {
 #tablaModalArticulos {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0 4px; /* deja respirar las filas */
+    border-spacing: 0 4px;
 }
 
-#tablaModalArticulos th, 
+#tablaModalArticulos th,
 #tablaModalArticulos td {
     text-align: center;
     vertical-align: middle;
     font-family: var(--fuente-secundaria);
     font-size: 0.98rem;
-    padding: 0.65rem 0.9rem; /* más espacio interno */
-    box-sizing: border-box;
+    padding: 0.65rem 0.9rem;
 }
 
 #tablaModalArticulos thead th {
     background-color: #05564f;
     color: white;
     font-weight: 600;
-    font-size: 1rem;
+}
+
+#tablaModalArticulos tbody tr {
+    transition: background-color 0.2s ease-in-out;
 }
 
 #tablaModalArticulos tbody tr:nth-of-type(odd) {
@@ -230,13 +237,11 @@ span.form-control {
 
 #tablaModalArticulos tbody tr:hover {
     background-color: rgba(5, 86, 79, 0.08);
-    transition: background-color 0.25s ease;
 }
 
 /* === COLUMNAS === */
 #tablaModalArticulos img {
-    max-width: 65px; /* imagen más visible */
-    height: auto;
+    max-width: 65px;
     border-radius: 6px;
     object-fit: cover;
 }
@@ -245,41 +250,29 @@ span.form-control {
 #tablaModalArticulos td.nombre {
     white-space: normal;
     word-break: break-word;
-    max-width: 260px; /* más ancho para textos largos */
+    max-width: 280px;
     text-align: left;
-    padding: 0.5rem 0.75rem;
-}
-
-#tablaModalArticulos td.precio-celda,
-#tablaModalArticulos td.cantidad-celda {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.35;
 }
 
 /* === BOTONES === */
 #tablaModalArticulos button {
-    font-family: var(--fuente-secundaria);
     font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
     padding: 6px 14px;
     border-radius: 6px;
+    transition: all 0.2s ease-in-out;
 }
 
 #tablaModalArticulos button:hover {
     opacity: 0.85;
 }
 
-/* === SELECT DE PAGINACIÓN === */
+/* === PAGINACIÓN === */
 #tablaModalArticulos_length select {
-    width: 90px;          /* más ancho para que se vea el número */
-    display: inline-block;
-    padding: 0.4rem 0.5rem; /* más espacio interno */
+    width: 90px;
+    padding: 0.4rem 0.5rem;
     border-radius: 6px;
-    font-size: 0.95rem;    /* más legible */
-    border: 1px solid #ced4da;
-    box-sizing: border-box;
+    font-size: 0.95rem;
 }
 
 

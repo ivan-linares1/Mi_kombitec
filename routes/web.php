@@ -113,6 +113,8 @@ Route::middleware('auth')->group(function () {
         Route::post('ServiciosWEB_Aux/{servicio}/{metodo}/{modo}', [ SincronizacionController::class, 'ServicioWebAux'])->name('SincronizarAux');
         //Llama a la funcion de servicios web con archivos 
         Route::post('ServiciosWEB/{servicio}', [Archivos_Sincronizasores::class, 'ServicioWeb'])->name('SincronizarArchivo');
+
+        Route::get('/articulos/datatable', [ArticuloController::class, 'datatable']);
     });
 
 

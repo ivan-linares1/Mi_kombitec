@@ -104,18 +104,6 @@ class CotizacionesController extends Controller
             $query->whereDate('RateDate', $hoy);
         }])->get();
 
-        // Artículos activos que tengan cambios en su moneda para hoy
-        /*$articulos = Articulo::where('Active', 'Y')
-            ->where('OnHand', '>', 0)
-            ->whereHas('precio.moneda.cambios', function($query) use ($hoy) {
-                $query->whereDate('RateDate', $hoy);
-            })
-            ->with(['precio.moneda.cambios' => function($query) use ($hoy) {
-                $query->whereDate('RateDate', $hoy);
-            }, 'imagen'])
-            ->with('marca')
-            ->get();*/
-
         $articulos = Articulo::where('Active', 'Y')
         ->whereHas('precio.moneda.cambios', function($query) use ($hoy) {
             $query->whereDate('RateDate', $hoy);
@@ -152,7 +140,6 @@ class CotizacionesController extends Controller
                 'comentario' =>$cotizacion->comment,
             ];
 
-            // 🔥 SIN O(n²)
             foreach ($cotizacion->lineas as $linea) {
                 if (isset($articulosPorCodigo[$linea->ItemCode])) {
                     $artClone = clone $articulosPorCodigo[$linea->ItemCode];
@@ -166,7 +153,7 @@ class CotizacionesController extends Controller
             $clienteBase = Clientes::where('CardCode', $preseleccionados['cliente'])->first();
         }
 
-        return view('users.cotizacion', compact('clienteBase', 'clientes', 'vendedores', 'monedas', 'articulos', 'IVA', 'preseleccionados', 'modo', 'fechaCreacion', 'fechaEntrega', 'lineasComoArticulos', 'pedido', 'cotizacion'));
+        return view('users.cotizacion', compact('clienteBase', 'clientes', 'vendedores', 'monedas', 'IVA', 'preseleccionados', 'modo', 'fechaCreacion', 'fechaEntrega', 'lineasComoArticulos', 'pedido', 'cotizacion'));
     }
 
     public function ObtenerDirecciones($CardCode){
