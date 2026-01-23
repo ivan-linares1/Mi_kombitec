@@ -57,15 +57,30 @@ class configuracionController extends Controller
             'ciudad' => 'nullable|string|max:30',
             'telefono' => 'nullable|string|max:15',
             'pais' => 'nullable|string|max:30',
-            'ruta_logo' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg|max:2048',
+            'ruta_logo_empresa' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg|max:2048',
+            'ruta_logo_principal' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg|max:2048',
+            'ruta_logo_login' => 'nullable|image|mimes:jpg,jpeg,png,gif,svg|max:2048',
             'MonedaPrincipal' => 'nullable',
         ]);
 
-        $data = $request->except('ruta_logo');
+        $data = $request->except('ruta_logo_empresa');
+        $data = $request->except('ruta_logo_principal');
+        $data = $request->except('ruta_logo_login');
 
-        if ($request->hasFile('ruta_logo')) {
-            $path = $request->file('ruta_logo')->store('logos', 'public');
-            $data['ruta_logo'] = $path;
+
+        if ($request->hasFile('ruta_logo_empresa')) {
+            $path = $request->file('ruta_logo_empresa')->store('logos', 'public');
+            $data['ruta_logo_empresa'] = $path;
+        }
+
+        if ($request->hasFile('ruta_logo_login')) {
+            $path = $request->file('ruta_logo_login')->store('logos', 'public');
+            $data['ruta_logo_login'] = $path;
+        }
+
+        if ($request->hasFile('ruta_logo_principal')) {
+            $path = $request->file('ruta_logo_principal')->store('logos', 'public');
+            $data['ruta_logo_principal'] = $path;
         }
 
         $config->update($data);

@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/consulta-stock/buscar', [ArticuloController::class, 'buscarArticulos'])->name('consulta_stock.buscar');
     Route::post('/consulta-stock/ver', [ArticuloController::class, 'verStock'])->name('consulta_stock.ver');
 
+    Route::get('/articulos/datatable', [ArticuloController::class, 'datatable']);
+
 
 
 
@@ -113,8 +115,6 @@ Route::middleware('auth')->group(function () {
         Route::post('ServiciosWEB_Aux/{servicio}/{metodo}/{modo}', [ SincronizacionController::class, 'ServicioWebAux'])->name('SincronizarAux');
         //Llama a la funcion de servicios web con archivos 
         Route::post('ServiciosWEB/{servicio}', [Archivos_Sincronizasores::class, 'ServicioWeb'])->name('SincronizarArchivo');
-
-        Route::get('/articulos/datatable', [ArticuloController::class, 'datatable']);
     });
 
 
