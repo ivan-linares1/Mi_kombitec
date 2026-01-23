@@ -45,6 +45,11 @@
             <a href="{{ route('NuevaCotizacion') }}" class="btn btn-primary" data-loading="true">Nueva Cotización</a>
         @endif
 
+        {{-- Botón actualizar --}}
+        <a href="{{ url()->full() }}" class="btn btn-primary btn-sm" title="Recargar página">
+            <i class="bi bi-arrow-clockwise"></i>
+        </a>
+
         {{-- Select mostrar --}}
         <div class="d-flex gap-2">
             <label for="mostrar" class="form-label fw-semibold">Mostrar</label>
