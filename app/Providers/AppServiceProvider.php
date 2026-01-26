@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        View::composer('componets.sidebar', function ($view) {
+        View::composer('components.sidebar', function ($view) {
             $configuracion = DB::table('configuracion')->first();
             $view->with('configuracion', $configuracion);
         });
