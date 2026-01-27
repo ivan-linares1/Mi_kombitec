@@ -33,7 +33,7 @@
             </div>
         @endif
         
-        <form method="POST" action="{{ route('login') }}">
+        <form id="loginForm" method="POST" action="{{ route('login') }}">
             @csrf
 
             <div class="mb-4">
@@ -42,7 +42,7 @@
                     <span class="input-group-text">
                         <i class="bi bi-envelope-fill"></i>
                     </span>
-                    <input id="email" type="email" name="email" class="form-control input-custom" value="{{ old('email') }}" required >
+                    <input id="email" type="email" name="email" class="form-control input-custom" value="{{ old('email') }}" autocomplete="email" required >
                 </div>
             </div>
 
@@ -52,7 +52,7 @@
                     <span class="input-group-text">
                         <i class="bi bi-lock-fill"></i>
                     </span>
-                    <input id="password" type="password" name="password" class="form-control input-custom" required>
+                    <input id="password" type="password" name="password" class="form-control input-custom" autocomplete="current-password" required>
                     <span class="input-group-text password-toggle" onclick="togglePassword()" tabindex="0" role="button" aria-label="Mostrar/ocultar contraseña">
                         <i id="eye-icon" class="bi bi-eye-fill"></i>
                     </span>
@@ -100,6 +100,26 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             togglePassword();
         }
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('loginForm');
+    const inputs = form.querySelectorAll('button');
+
+    form.addEventListener('submit', function () {
+        // Deshabilitar todos los campos
+        inputs.forEach(el => {
+            el.disabled = true;
+        });
+
+        // Cambiar texto del botón (opcional pero pro)
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = `
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Ingresando...
+        `;
     });
 });
 </script>
