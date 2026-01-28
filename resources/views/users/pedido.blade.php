@@ -238,7 +238,7 @@ window.preseleccionadoClienteDireccionEntrega = @json($cotizacion->Address2 ?? $
             </button>
         @endif
     @else {{--Cuando es modo 1 que es de detalles solo se tiene disponible el boton de pdf--}}
-        <button type="button" class="btn btn-danger" onclick="window.open('{{ route('pedido.pdf', $pedido->DocEntry) }}', '_blank')">
+        <button type="button" class="btn btn-danger" onclick="window.open('{{ URL::temporarySignedRoute('pedido.pdf', now()->addMinutes(5), ['id' => $pedido->DocEntry] ) }}', '_blank' )">
             <i class="bi bi-filetype-pdf"></i> PDF
         </button>
     @endif

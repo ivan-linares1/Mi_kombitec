@@ -152,8 +152,8 @@
         <strong>Detalles del error:</strong><br>
         {{ $exception->getMessage() }}
       </div>
-    @endif
-  </div>--}}
+    @endif--}}
+  </div>
 
   <div class="bubbles">
     <span></span><span></span><span></span>

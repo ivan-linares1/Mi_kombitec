@@ -38,7 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/NuevaCotizacion/{DocEntry?}', [CotizacionesController::class, 'NuevaCotizacion'])->name('NuevaCotizacion');
         Route::get('/cliente/{cardCode}/direcciones', [CotizacionesController::class, 'ObtenerDirecciones'])->name('ObtenerDirecciones');
         Route::get('/cotizacion/{id}', [CotizacionesController::class, 'detalles'])->name('detalles');
-        Route::get('/cotizacion/pdf/{id}', [CotizacionesController::class, 'pdfCotizacion'])->name('cotizacion.pdf');
+        //Route::get('/cotizacion/pdf/{id}', [CotizacionesController::class, 'pdfCotizacion'])->name('cotizacion.pdf');
     });
 
 
@@ -48,8 +48,20 @@ Route::middleware('auth')->group(function () {
         Route::get('/NuevoPedido/{DocEntry?}', [PedidosController::class, 'NuevoPedido'])->name('NuevaPedido');
         Route::post('/GuardarPedido', [PedidosController::class, 'guardarPedido'])->name('PedidoSave');
         Route::get('/Pedido/{id}', [PedidosController::class, 'detallesPedido'])->name('detallesP');
-        Route::get('/Pedido/pdf/{id}', [PedidosController::class, 'pdfPedido'])->name('pedido.pdf');
+        //Route::get('/Pedido/pdf/{id}', [PedidosController::class, 'pdfPedido'])->name('pedido.pdf');
         Route::post('/Articulo/stock', [ArticuloController::class, 'stock'])->name('verificarStock');
+    });
+
+    Route::middleware('signed')->group(function () {
+
+        Route::get('/Cotizaciones/cotizacion/pdf/{id}',
+            [CotizacionesController::class, 'pdfCotizacion']
+        )->name('cotizacion.pdf');
+
+        Route::get('/Pedidos/Pedido/pdf/{id}',
+            [PedidosController::class, 'pdfPedido']
+        )->name('pedido.pdf');
+
     });
 
     //Ruta para la consulta AJAX de los clientes con su paginacion correspondiente

@@ -249,9 +249,10 @@ window.preseleccionadoClienteDireccionEntrega = @json($cotizacion->Address2 ?? '
             </button>
         @endif
     @else 
-        <button type="button" class="btn btn-danger" onclick="window.open('{{ route('cotizacion.pdf', $cotizacion->DocEntry ?? 0) }}','_blank')">
+        <button type="button" class="btn btn-danger" onclick="window.open('{{ URL::temporarySignedRoute('cotizacion.pdf',now()->addMinutes(5),['id' => $cotizacion->DocEntry]) }}','_blank')">
             <i class="bi bi-filetype-pdf"></i> PDF
         </button>
+
         @if($moneda->cambios->isEmpty() || $pedido || $cotizacion->DocStatus == 'C')
             <div class="d-inline-block position-relative">
                 <button class="btn btn-secondary" disabled><i class="bi bi-pencil-square"></i> Duplicar</button>
