@@ -35,6 +35,10 @@
 
     <!--  fancybox importacion de la libreria que ayuda con la ampliacion de las imagenes -->
     <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
+
+    <!-- DataTables -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
     
     <!-- Importación de CSS -->
     @vite(['resources/css/variables.css', 'resources/css/style.css', 'resources/js/validaciones.js', 'resources/css/catalogos.css'])
@@ -66,6 +70,8 @@
 
         @yield('contenido')
     </main>
+
+    <x-consulta-stock />
 
     {{-- Overlay --}}
     <div class="overlay" id="overlay"></div>

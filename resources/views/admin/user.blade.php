@@ -92,15 +92,15 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="email_usuario" class="form-label fw-semibold">Email</label>
-                            <input type="email" name="email" id="email_usuario" class="form-control" required>
+                            <input type="email" name="email" id="email_usuario" class="form-control" autocomplete="username"required>
                         </div>
                         <div class="col-md-3">
                             <label for="password_usuario" class="form-label fw-semibold">Contraseña</label>
-                            <input type="password" name="password" id="password_usuario" class="form-control" required>
+                            <input type="password" name="password" id="password_usuario" class="form-control" autocomplete="new-password" required>
                         </div>
                         <div class="col-md-3">
                             <label for="password_confirmation_usuario" class="form-label fw-semibold">Confirmar</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation_usuario" class="form-control" required>
+                            <input type="password" name="password_confirmation" id="password_confirmation_usuario" class="form-control" autocomplete="new-password" required>
                         </div>
                     </div>
 
@@ -198,15 +198,15 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="email_vendedor" class="form-label fw-semibold">Email</label>
-                            <input type="email" name="email" id="email_vendedor" class="form-control" required>
+                            <input type="email" name="email" id="email_vendedor" class="form-control" autocomplete="username" required>
                         </div>
                         <div class="col-md-3">
                             <label for="password_vendedor" class="form-label fw-semibold">Contraseña</label>
-                            <input type="password" name="password" id="password_vendedor" class="form-control" required>
+                            <input type="password" name="password" id="password_vendedor" class="form-control" autocomplete="new-password"required>
                         </div>
                         <div class="col-md-3">
                             <label for="password_confirmation_vendedor" class="form-label fw-semibold">Confirmar</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation_vendedor" class="form-control" required>
+                            <input type="password" name="password_confirmation" id="password_confirmation_vendedor" class="form-control" autocomplete="new-password"required>
                         </div>
                     </div>
                 </div>
@@ -294,8 +294,7 @@ $(document).ready(function() {
     });
 
     // ---------- Inicializar DataTable Para Filtros----------
-    $(document).ready(function() {
-        function fetchUsuarios(url = "{{ route('usuarios') }}") {
+    function fetchUsuarios(url = "{{ route('usuarios') }}") {
             const buscar = $('#buscarUsuario').val(); 
             const estatus = $('select[name="estatus"]').val();
             const mostrar = $('select[name="mostrar"]').val();
@@ -333,8 +332,6 @@ $(document).ready(function() {
 
             $('html, body').animate({ scrollTop: 0 }, 200);
         });
-
-    });
 
     // ---------- Toggle estado con confirmación ----------
     $.ajaxSetup({

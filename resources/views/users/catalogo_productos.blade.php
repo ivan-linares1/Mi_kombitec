@@ -67,13 +67,9 @@
 
 @endsection
 
-@push('styles')
-<link rel="stylesheet" href="{{ asset('css/catalogo.css') }}">
-@endpush
+
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     // Filtro de búsqueda
     $(document).ready(function() {

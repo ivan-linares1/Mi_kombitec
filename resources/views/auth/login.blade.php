@@ -59,11 +59,6 @@
                 </div>
             </div>
 
-            <div class="form-check mb-4">
-                <input id="remember_me" type="checkbox" name="remember" class="form-check-input">
-                <label for="remember_me" class="form-check-label">Recordarme</label>
-            </div>
-
             <div class="d-grid mb-3">
                 <button type="submit" class="btn btn-primary-custom btn-lg">Ingresar</button>
             </div>

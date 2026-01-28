@@ -51,7 +51,6 @@
 @endsection
 
 @push('styles')
-<link rel="stylesheet" href="{{ asset('css/catalogo.css') }}">
 <style>
 /* Toggle estilo iOS */
 .switch {
@@ -103,8 +102,6 @@ input:checked + .slider:before {
 @endpush
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
 
